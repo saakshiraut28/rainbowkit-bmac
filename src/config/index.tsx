@@ -1,20 +1,46 @@
 /** @format */
+// setup the provider
 "use client";
 import "@rainbow-me/rainbowkit/styles.css";
-import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import { WagmiProvider } from "wagmi";
+import {
+  connectorsForWallets,
+  getDefaultConfig,
+  RainbowKitProvider,
+} from "@rainbow-me/rainbowkit";
+import { createConfig, WagmiProvider, http } from "wagmi";
 import { sepolia, mainnet } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+// Import the wallets that are needed
+import {
+  metaMaskWallet,
+  phantomWallet,
+} from "@rainbow-me/rainbowkit/wallets";
 
 const queryClient = new QueryClient();
 
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
 
-const config = getDefaultConfig({
-  appName: "My RainbowKit App",
-  projectId: projectId || "ProjecID", // Get this from reown cloud
-  chains: [mainnet, sepolia],
-  ssr: true, // Enable if using SSR
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: "Recommended",
+      wallets: [metaMaskWallet, phantomWallet],
+    },
+  ],
+  {
+    appName: "RainbowKit App",
+    projectId: projectId || " ",
+  }
+);
+
+const config = createConfig({
+  chains: [sepolia, mainnet], // networks
+  connectors: connectors,
+  ssr: true,
+  transports: {
+    [sepolia.id]: http(),
+    [mainnet.id]: http(),
+  },
 });
 
 export function Providers({ children }: { children: React.ReactNode }) {
